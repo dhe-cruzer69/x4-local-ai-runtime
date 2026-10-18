@@ -21,6 +21,26 @@ x4-ai recommend --ram 8 --gpu-vram 0
 - Cloud fallback only when explicitly enabled
 - No production inference claims until backends are wired and tested
 
+<!-- X4-APEX-DIAGRAM-START:x4-local-ai-runtime -->
+
+```mermaid
+flowchart TD
+    USER[User or Local Agent] --> DETECT[Detect Hardware Resources]
+    DETECT --> REC[Recommend Runtime and Model Size]
+    REC --> LOCAL{Local Backend Available?}
+    LOCAL -->|yes| MODEL[Use Explicitly Configured Local Model]
+    LOCAL -->|no| STOP[Report Missing Backend or Model]
+    MODEL --> HEALTH[Validate Availability Before Use]
+    HEALTH -->|ready| INFER[Run Local Inference]
+    HEALTH -->|not ready| STOP
+    CLOUD{Cloud Fallback Explicitly Enabled?} -->|no| STOP
+    CLOUD -->|yes| CONFIRM[Show Provider and Cost Boundary]
+    CONFIRM --> REMOTE[Configured Cloud Adapter - if implemented]
+    NOTE[README states backend wiring and production inference are not yet established] -. status boundary .-> REMOTE
+```
+
+<!-- X4-APEX-DIAGRAM-END:x4-local-ai-runtime -->
+
 ## License
 
 Apache-2.0
