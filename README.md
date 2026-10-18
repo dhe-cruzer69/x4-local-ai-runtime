@@ -24,3 +24,35 @@ x4-ai recommend --ram 8 --gpu-vram 0
 ## License
 
 Apache-2.0
+
+## APEX Architecture Map
+
+> Status: architecture documentation; implementation and deployment claims require independent verification.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant CLI
+  participant Runtime
+  participant Config as Model configuration
+  participant Ollama
+  participant Cache
+  CLI->>Runtime: Start with explicit model and limits
+  Runtime->>Config: Validate provider, context, and resource budget
+  Config-->>Runtime: Valid configuration or typed error
+  Runtime->>Ollama: Check health and model availability
+  alt model missing and network pulls permitted
+    Runtime->>Ollama: Pull pinned model
+    Ollama-->>Runtime: Pull status
+  else offline or pulls disabled
+    Runtime->>Runtime: Use local model only or fail clearly
+  end
+  Runtime->>Runtime: Mark ready only after health check
+  CLI->>Runtime: Submit bounded inference request
+  Runtime->>Ollama: Infer with timeout and context limits
+  Ollama-->>Runtime: Result or provider error
+  Runtime->>Cache: Store only if cache policy permits
+  Runtime-->>CLI: Response + model provenance
+```
+**Evidence note:** Model pulling, cache persistence, offline fallback, and readiness semantics must be verified against runtime code and tests.
+
